@@ -1,4 +1,3 @@
-// Step1
 // consoleに“hello world” を表示できるようにする
 console.log('hello world')
 
@@ -6,40 +5,42 @@ const taskName = document.getElementById('task-name');
 const taskSubmit = document.getElementById('task-submit');
 const taskList = document.getElementById('task-list');
 
-let tasks = []
+let tasks = [
+  {
+    id: 1,
+    name: 'task_1',
+    status: 'progress'
+  }
+]
 
+// taskの初期表示
+tasks.forEach(task => {
+  displayTask(task)
+})
 // taskの総件数の初期表示
 totalTasks()
 // 完了済みtaskの件数の初期表示
 totalDoneTasks()
 
 //  ボタンをsubmitしたらタスクリストに自分が元々用意した値が（何度でも）追加されるようにする(preventDefault, event triggers)
-function addTasks(task) {
-  const newTask = {}
+function displayTask(task) {
   const newTaskRow = document.createElement('tr')
   const newTaskName = document.createElement('td')
   const newDoneButton = document.createElement('td')
   const newDeleteButton = document.createElement('td')
-  const taskId = tasks.length + 1
 
-  newTaskRow.id = `row-${taskId}`
+  newTaskRow.id = `row-${task.id}`
 
-  newTaskName.innerHTML = `<p id="task-${taskId}">${task}<p>`
+  newTaskName.innerHTML = `<p id="task-${task.id}">${task.name}<p>`
   newTaskRow.appendChild(newTaskName)
 
-  newDoneButton.innerHTML = `<button id="done-${taskId}" onclick="changeStatus(event)">progress</button>`
+  newDoneButton.innerHTML = `<button id="done-${task.id}" onclick="changeStatus(event)">progress</button>`
   newTaskRow.appendChild(newDoneButton)
 
-  newDeleteButton.innerHTML = `<button id="delete-${taskId}" onclick="deleteTask(event)">delete</button>`
+  newDeleteButton.innerHTML = `<button id="delete-${task.id}" onclick="deleteTask(event)">delete</button>`
   newTaskRow.appendChild(newDeleteButton)
 
   taskList.appendChild(newTaskRow);
-
-  newTask.id = taskId
-  newTask.name = task
-  newTask.status = 'progress'
-
-  tasks.push(newTask)
 
   totalTasks()
   totalDoneTasks()
@@ -51,13 +52,15 @@ taskSubmit.addEventListener('click', event => {
 
   const taskNmaeValue = taskName.value
 
-  //  新しいタスクを追加するときにその値がconsoleに表示されるようにする。
-  console.log(taskNmaeValue)
-
   if( taskNmaeValue == '' ){
     alert('空のタスクは表示登録できません！')
+  }else if(tasks.filter(task => task.name == taskNmaeValue).length != 0) {
+    alert('その名前のタスクは既に存在します！')
   }else{
-    addTasks(taskNmaeValue);
+    displayTask(addTask(taskNmaeValue))
+    
+    //  新しいタスクを追加するときにその値がconsoleに表示されるようにする。
+    console.log(taskNmaeValue)
   }
   taskName.value = ''
 })
@@ -67,14 +70,14 @@ taskSubmit.addEventListener('click', event => {
 function changeStatus(event) {
   const targetId = event.target.id.split('-')[1]
   const task = tasks.find(task => task.id == targetId)
-  const displayTask = document.getElementById(`task-${targetId}`)
+  const taskView = document.getElementById(`task-${targetId}`)
 
   if(task.status == 'done'){
     event.target.innerText = task.status = 'progress'
-    displayTask.innerHTML = `<p id="task-${targetId}">${task.name}<p>`
+    taskView.innerHTML = `<p id="task-${targetId}">${task.name}<p>`
   }else{
     event.target.innerText = task.status = 'done'
-    displayTask.innerHTML = `<del id-"${targetId}">${task.name}</del>`
+    taskView.innerHTML = `<del id-"${targetId}">${task.name}</del>`
   }
   totalDoneTasks()
 }
@@ -107,4 +110,17 @@ function totalDoneTasks() {
   const doneTasks = tasks.filter(task => task.status === 'done')
 
   displayDoneTasks.innerText = `done: ${doneTasks.length}`
+}
+
+// taskを新規登録する（tasksの配列にpushする）
+function addTask(newTaskName) {
+  const newTask = {}
+
+  newTask.id = tasks.length + 1
+  newTask.name = newTaskName
+  newTask.status = 'progress'
+
+  tasks.push(newTask)
+
+  return newTask
 }
