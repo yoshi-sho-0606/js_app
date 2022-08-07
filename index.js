@@ -52,13 +52,15 @@ taskSubmit.addEventListener('click', event => {
 
   const taskNmaeValue = taskName.value
 
-  //  新しいタスクを追加するときにその値がconsoleに表示されるようにする。
-  console.log(taskNmaeValue)
-
   if( taskNmaeValue == '' ){
     alert('空のタスクは表示登録できません！')
+  }else if(tasks.filter(task => task.name == taskNmaeValue).length != 0) {
+    alert('その名前のタスクは既に存在します！')
   }else{
     displayTask(addTask(taskNmaeValue))
+    
+    //  新しいタスクを追加するときにその値がconsoleに表示されるようにする。
+    console.log(taskNmaeValue)
   }
   taskName.value = ''
 })
