@@ -14,9 +14,8 @@ let tasks = [
 ]
 
 // taskの初期表示
-tasks.forEach(task => {
-  displayTask(task)
-})
+displayTasks()
+
 // taskの総件数の初期表示
 totalTasks()
 // 完了済みtaskの件数の初期表示
@@ -31,13 +30,18 @@ function displayTask(task) {
 
   newTaskRow.id = `row-${task.id}`
 
-  newTaskName.innerHTML = `<p id="task-${task.id}">${task.name}<p>`
-  newTaskRow.appendChild(newTaskName)
-
-  newDoneButton.innerHTML = `<button id="done-${task.id}" onclick="changeStatus(event)">progress</button>`
-  newTaskRow.appendChild(newDoneButton)
+  if(task.status == 'done'){
+    newTaskName.innerHTML = `<del id-"${task.id}">${task.name}</del>`
+    newDoneButton.innerHTML = `<button id="done-${task.id}" onclick="changeStatus(event)">done</button>`
+  }else{
+    newTaskName.innerHTML = `<p id="task-${task.id}">${task.name}<p>`
+    newDoneButton.innerHTML = `<button id="done-${task.id}" onclick="changeStatus(event)">progress</button>`
+  }
 
   newDeleteButton.innerHTML = `<button id="delete-${task.id}" onclick="deleteTask(event)">delete</button>`
+
+  newTaskRow.appendChild(newTaskName)
+  newTaskRow.appendChild(newDoneButton)
   newTaskRow.appendChild(newDeleteButton)
 
   taskList.appendChild(newTaskRow);
@@ -70,16 +74,17 @@ taskSubmit.addEventListener('click', event => {
 function changeStatus(event) {
   const targetId = event.target.id.split('-')[1]
   const task = tasks.find(task => task.id == targetId)
-  const taskView = document.getElementById(`task-${targetId}`)
 
   if(task.status == 'done'){
-    event.target.innerText = task.status = 'progress'
-    taskView.innerHTML = `<p id="task-${targetId}">${task.name}<p>`
+    task.status = 'progress'
   }else{
-    event.target.innerText = task.status = 'done'
-    taskView.innerHTML = `<del id-"${targetId}">${task.name}</del>`
+    task.status = 'done'
   }
+  
   totalDoneTasks()
+  tasks.sort(sortTasks)
+  taskList.innerHTML = '';
+  displayTasks()
 }
 
 //  タスク削除機能を作成する
@@ -123,4 +128,15 @@ function addTask(newTaskName) {
   tasks.push(newTask)
 
   return newTask
+}
+
+function displayTasks(){
+  tasks.forEach(task => {
+    displayTask(task)
+  })
+}
+
+// タスクが完了したら進行中のタスクより下に、進行中に戻したら完了したタスクの上に表示されるようにする
+function sortTasks(a, b) {
+  return b.status.length - a.status.length
 }
