@@ -8,9 +8,10 @@ const taskList = document.getElementById('task-list');
 
 // ローカルストレージを使用したタスクの初期化
 let tasks = []
-let storageTasks = localStorage.getItem("tasks")
 
 function setTasks() {
+  const storageTasks = localStorage.getItem("tasks")
+
   if(storageTasks){
     tasks.push(...JSON.parse(storageTasks))
   }
@@ -73,7 +74,6 @@ taskSubmit.addEventListener('click', event => {
   taskName.value = ''
 })
 
-//  タスク完了ボタン機能を作成する
 //  タスク完了ボタンを押したときにストライクスルーにする
 function changeStatus(event) {
   const targetId = event.target.id.split('-')[1]
@@ -89,6 +89,9 @@ function changeStatus(event) {
 
   tasks.sort(sortTasks)
 
+  // タスクが完了したら配列を更新できるようにする。consoleに変更後の配列を表示する
+  console.log(tasks)
+
   setLocalStorage()
   totalDoneTasks()
   displayTasks()
@@ -103,6 +106,9 @@ function deleteTask(event) {
   targetRow.remove()
   tasks = tasks.filter(task => task.id != targetTask.id)
 
+  // 削除したらconsoleに削除後の配列を表示する
+  console.log(tasks)
+
   setLocalStorage()
   totalTasks()
   totalDoneTasks()
@@ -115,6 +121,7 @@ function totalTasks() {
 
   displayTotalTask.innerText = `total: ${tasksLength}`
 }
+
 // 完了済みの件数表示
 function totalDoneTasks() {
   const displayDoneTasks = document.getElementById('done-tasks')
@@ -133,6 +140,9 @@ function addTask(newTaskName) {
 
   tasks.push(newTask)
   
+  // 新しいタスクを追加するときにその値がconsoleに表示されるようにする。
+  console.log(tasks)
+
   setLocalStorage()
 
   return newTask
