@@ -5,20 +5,26 @@ const taskName = document.getElementById('task-name');
 const taskSubmit = document.getElementById('task-submit');
 const taskList = document.getElementById('task-list');
 
-let tasks = [
-  {
-    id: 1,
-    name: 'task_1',
-    status: 'progress'
+
+// ローカルストレージを使用したタスクの初期化
+let tasks = []
+
+function setTasks() {
+  const storageTasks = localStorage.getItem("tasks")
+
+  if(storageTasks){
+    tasks.push(...JSON.parse(storageTasks))
   }
-]
+}
+
+setTasks()
 
 // taskの初期表示
-tasks.forEach(task => {
-  displayTask(task)
-})
+displayTasks()
+
 // taskの総件数の初期表示
 totalTasks()
+
 // 完了済みtaskの件数の初期表示
 totalDoneTasks()
 
@@ -31,13 +37,18 @@ function displayTask(task) {
 
   newTaskRow.id = `row-${task.id}`
 
-  newTaskName.innerHTML = `<p id="task-${task.id}">${task.name}<p>`
-  newTaskRow.appendChild(newTaskName)
-
-  newDoneButton.innerHTML = `<button id="done-${task.id}" onclick="changeStatus(event)">progress</button>`
-  newTaskRow.appendChild(newDoneButton)
+  if(task.status == 'done'){
+    newTaskName.innerHTML = `<del id-"${task.id}">${task.name}</del>`
+    newDoneButton.innerHTML = `<button id="done-${task.id}" onclick="changeStatus(event)">done</button>`
+  }else{
+    newTaskName.innerHTML = `<p id="task-${task.id}">${task.name}<p>`
+    newDoneButton.innerHTML = `<button id="done-${task.id}" onclick="changeStatus(event)">progress</button>`
+  }
 
   newDeleteButton.innerHTML = `<button id="delete-${task.id}" onclick="deleteTask(event)">delete</button>`
+
+  newTaskRow.appendChild(newTaskName)
+  newTaskRow.appendChild(newDoneButton)
   newTaskRow.appendChild(newDeleteButton)
 
   taskList.appendChild(newTaskRow);
@@ -46,10 +57,8 @@ function displayTask(task) {
   totalDoneTasks()
 }
 
-//  formに入力した値がタスクリストに追加されるようにする(空っぽの文字列ご注意！）
+//  formに入力した値がタスクリストに追加されるようにする
 taskSubmit.addEventListener('click', event => {
-  event.preventDefault();
-
   const taskNmaeValue = taskName.value
 
   if( taskNmaeValue == '' ){
@@ -65,21 +74,27 @@ taskSubmit.addEventListener('click', event => {
   taskName.value = ''
 })
 
-//  タスク完了ボタン機能を作成する
 //  タスク完了ボタンを押したときにストライクスルーにする
 function changeStatus(event) {
   const targetId = event.target.id.split('-')[1]
   const task = tasks.find(task => task.id == targetId)
-  const taskView = document.getElementById(`task-${targetId}`)
 
   if(task.status == 'done'){
-    event.target.innerText = task.status = 'progress'
-    taskView.innerHTML = `<p id="task-${targetId}">${task.name}<p>`
+    task.status = 'progress'
   }else{
-    event.target.innerText = task.status = 'done'
-    taskView.innerHTML = `<del id-"${targetId}">${task.name}</del>`
+    task.status = 'done'
   }
+
+  taskList.innerHTML = '';
+
+  tasks.sort(sortTasks)
+
+  // タスクが完了したら配列を更新できるようにする。consoleに変更後の配列を表示する
+  console.log(tasks)
+
+  setLocalStorage()
   totalDoneTasks()
+  displayTasks()
 }
 
 //  タスク削除機能を作成する
@@ -91,20 +106,23 @@ function deleteTask(event) {
   targetRow.remove()
   tasks = tasks.filter(task => task.id != targetTask.id)
 
+  // 削除したらconsoleに削除後の配列を表示する
+  console.log(tasks)
+
+  setLocalStorage()
   totalTasks()
   totalDoneTasks()
 }
 
-//  タスクの総件数、完了済のタスクの表示
+//  タスクの件数表示
 function totalTasks() {
   const displayTotalTask = document.getElementById('total-tasks')
   const tasksLength = tasks.length
 
-  console.log(tasksLength)
-
   displayTotalTask.innerText = `total: ${tasksLength}`
 }
 
+// 完了済みの件数表示
 function totalDoneTasks() {
   const displayDoneTasks = document.getElementById('done-tasks')
   const doneTasks = tasks.filter(task => task.status === 'done')
@@ -115,12 +133,47 @@ function totalDoneTasks() {
 // taskを新規登録する（tasksの配列にpushする）
 function addTask(newTaskName) {
   const newTask = {}
-
-  newTask.id = tasks.length + 1
+  
+  newTask.id = ( Number(setLargestId()) + 1)
   newTask.name = newTaskName
   newTask.status = 'progress'
 
   tasks.push(newTask)
+  
+  // 新しいタスクを追加するときにその値がconsoleに表示されるようにする。
+  console.log(tasks)
+
+  setLocalStorage()
 
   return newTask
+}
+
+function displayTasks(){
+  tasks.forEach(task => {
+    displayTask(task)
+  })
+}
+
+// タスクが完了したら進行中のタスクより下に、進行中に戻したら完了したタスクの上に表示されるようにする
+function sortTasks(a, b) {
+  return b.status.length - a.status.length
+}
+
+// ローカルストレージに保存されているタスクのIDの一番大きなものを取得する
+function setLargestId() {
+  let largestId = 1
+  const ids = []
+
+  if(tasks.length != 0){
+    tasks.forEach(task => {
+      ids.push(task.id)
+    })
+    largestId = Math.max(...ids)
+  }
+  return largestId
+}
+
+// ローカルストレージの更新
+function setLocalStorage(){
+  localStorage.setItem('tasks', JSON.stringify(tasks))
 }
