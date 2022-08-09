@@ -71,7 +71,11 @@ taskSubmit.addEventListener('click', event => {
     //  新しいタスクを追加するときにその値がconsoleに表示されるようにする。
     console.log(taskNmaeValue)
   }
+  
   taskName.value = ''
+  taskList.innerHTML = '';
+  tasks.sort(sortTasks)
+  displayTasks()
 })
 
 //  タスク完了ボタンを押したときにストライクスルーにする
